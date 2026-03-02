@@ -15,24 +15,21 @@ animate();
 function init() {
   scene = new THREE.Scene();
 
-  // Camera
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.z = 6;  // camera z auto-adjusts later
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+  camera.position.z = 5;
 
-  // Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio(window.devicePixelRatio); 
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // Groups
   gridGroup = new THREE.Group();
   scene.add(gridGroup);
 
   symbolGroup = new THREE.Group();
   scene.add(symbolGroup);
 
-  createGridPlanes();
+  createGrid();
   createCells();
 
   renderer.domElement.addEventListener("pointerdown", onPointerDown);
@@ -43,35 +40,29 @@ function init() {
   onResize();
 }
 
-// Use thin planes for the grid
-function createGridPlanes() {
-  const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+function createGrid() {
+  const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+  const positions = [-0.5, 0.5];
 
-  // Vertical lines
-  for (let i = -1; i <= 1; i += 2) {
-    const geometry = new THREE.PlaneGeometry(0.05, 3); // thin vertical plane
-    const mesh = new THREE.Mesh(geometry, lineMaterial);
-    mesh.position.x = i;
-    gridGroup.add(mesh);
-  }
+  positions.forEach(x => {
+    let points = [new THREE.Vector3(x, -1.5, 0), new THREE.Vector3(x, 1.5, 0)];
+    gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+  });
 
-  // Horizontal lines
-  for (let i = -1; i <= 1; i += 2) {
-    const geometry = new THREE.PlaneGeometry(3, 0.05); // thin horizontal plane
-    const mesh = new THREE.Mesh(geometry, lineMaterial);
-    mesh.position.y = i;
-    gridGroup.add(mesh);
-  }
+  positions.forEach(y => {
+    let points = [new THREE.Vector3(-1.5, y, 0), new THREE.Vector3(1.5, y, 0)];
+    gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+  });
 }
 
 function createCells() {
   let index = 0;
   for (let y = 1; y >= -1; y--) {
     for (let x = -1; x <= 1; x++) {
-      const geometry = new THREE.PlaneGeometry(0.9, 0.9);
-      const material = new THREE.MeshBasicMaterial({ visible: false });
-      const cell = new THREE.Mesh(geometry, material);
-      cell.position.set(x, y, 0.1);
+      let geometry = new THREE.PlaneGeometry(0.9, 0.9);
+      let material = new THREE.MeshBasicMaterial({ visible: false });
+      let cell = new THREE.Mesh(geometry, material);
+      cell.position.set(x, y, 0);
       cell.userData.index = index;
       cells.push(cell);
       board.push("");
@@ -92,10 +83,10 @@ function onPointerDown(event) {
   mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(cells);
+  let intersects = raycaster.intersectObjects(cells);
 
   if (intersects.length > 0) {
-    const index = intersects[0].object.userData.index;
+    let index = intersects[0].object.userData.index;
     if (board[index] === "") {
       board[index] = currentPlayer;
       placeSymbol(index, currentPlayer);
@@ -110,18 +101,18 @@ function placeSymbol(index, player) {
   let y = 1 - Math.floor(index / 3);
 
   if (player === "X") {
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const p1 = [new THREE.Vector3(x - 0.3, y - 0.3, 0.1), new THREE.Vector3(x + 0.3, y + 0.3, 0.1)];
-    const p2 = [new THREE.Vector3(x - 0.3, y + 0.3, 0.1), new THREE.Vector3(x + 0.3, y - 0.3, 0.1)];
-    const l1 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(p1), material);
-    const l2 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(p2), material);
+    const material = new THREE.LineBasicMaterial({ color: 0xffffff }); // white
+    let p1 = [new THREE.Vector3(x - 0.3, y - 0.3, 0), new THREE.Vector3(x + 0.3, y + 0.3, 0)];
+    let p2 = [new THREE.Vector3(x - 0.3, y + 0.3, 0), new THREE.Vector3(x + 0.3, y - 0.3, 0)];
+    let l1 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(p1), material);
+    let l2 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(p2), material);
     symbolGroup.add(l1, l2);
     symbols.push(l1, l2);
   } else {
     const geometry = new THREE.RingGeometry(0.25, 0.3, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }); // white
     const circle = new THREE.Mesh(geometry, material);
-    circle.position.set(x, y, 0.1);
+    circle.position.set(x, y, 0);
     symbolGroup.add(circle);
     symbols.push(circle);
   }
@@ -135,7 +126,7 @@ function checkWinner() {
   ];
 
   for (let combo of wins) {
-    const [a,b,c] = combo;
+    let [a,b,c] = combo;
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
       showModal("Player " + board[a] + " Wins!");
       gameOver = true;
@@ -179,20 +170,8 @@ function animate() {
 }
 
 function onResize() {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  camera.aspect = width / height;
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-
-  renderer.setSize(width, height);
+  renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-
-  // Adjust camera z so the grid fits the screen
-  const scale = Math.min(width / height, 1);
-  camera.position.z = 4.5 / scale;
-
-  // Scale symbols to fill squares
-  const symbolScale = 0.9 / 2.5 * camera.position.z; // proportional to camera distance
-  symbolGroup.scale.set(symbolScale, symbolScale, 1);
 }
