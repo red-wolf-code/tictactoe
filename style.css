@@ -7,7 +7,10 @@ body {
 }
 
 canvas {
-  touch-action: none; /* prevents scroll interference on mobile */
+  width: 100vw;
+  height: 100vh;
+  touch-action: none;
+  display: block;
 }
 
 /* Ellipsis menu (⋮) */
@@ -25,38 +28,37 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.4);    /* semi-transparent background */
-  border-radius: 50%;              /* circular button */
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-  touch-action: manipulation;      /* improve mobile tap */
+  touch-action: manipulation;
 }
 
 /* Dropdown menu */
 .dropdown {
   display: none;
   position: absolute;
-  top: 100px;                       /* below menu for easier tap */
+  top: 100px;                       /* below menu */
   right: 15px;
   background: #222;
   border: 1px solid #444;
   padding: 10px;
   border-radius: 8px;
   z-index: 10;
-  min-width: 140px;                 /* ensure enough tap area */
+  min-width: 140px;
 }
 
 .dropdown button {
   background: none;
   border: none;
   color: white;
-  font-size: 20px;                  /* bigger text for mobile */
-  padding: 14px 20px;               /* bigger tap area */
+  font-size: 20px;
+  padding: 14px 20px;
   width: 100%;
   text-align: left;
   cursor: pointer;
 }
 
-/* Hover effect for desktop (optional) */
 .dropdown button:hover {
   background: rgba(255,255,255,0.1);
 }
@@ -76,21 +78,21 @@ canvas {
 /* Modal content box */
 .modal-content {
   background: #222;
-  padding: 25px;
+  padding: 30px 25px;
   border-radius: 12px;
   text-align: center;
   color: white;
   max-width: 90%;
+  min-width: 220px;
+  font-size: 22px;
   box-sizing: border-box;
 }
 
-/* Modal button */
 .modal-content button {
-  margin-top: 20px;
-  padding: 14px 22px;
-  font-size: 18px;
-  cursor: pointer;
-  border-radius: 6px;
+  margin-top: 25px;
+  padding: 16px 24px;
+  font-size: 20px;
+  border-radius: 8px;
   background: #444;
   color: white;
   border: none;
