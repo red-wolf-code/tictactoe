@@ -16,7 +16,6 @@ function init() {
   // Initial camera setup (distance corrected in onResize)
   const aspect = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
-  camera.position.z = 6;
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -30,7 +29,7 @@ function init() {
 
   window.addEventListener("resize", onResize);
 
-  // Run initial resize to fit current orientation
+  // Initial resize to fit current screen
   onResize();
 }
 
@@ -99,7 +98,7 @@ function placeSymbol(index, player) {
   let y = 1 - Math.floor(index / 3);
 
   if (player === "X") {
-    let material = new THREE.LineBasicMaterial({ color: 0xffffff }); // white
+    let material = new THREE.LineBasicMaterial({ color: 0xffffff });
     let p1 = [new THREE.Vector3(x - 0.3, y - 0.3, 0.1), new THREE.Vector3(x + 0.3, y + 0.3, 0.1)];
     let p2 = [new THREE.Vector3(x - 0.3, y + 0.3, 0.1), new THREE.Vector3(x + 0.3, y - 0.3, 0.1)];
     let l1 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(p1), material);
@@ -108,7 +107,7 @@ function placeSymbol(index, player) {
     symbols.push(l1, l2);
   } else {
     let geometry = new THREE.RingGeometry(0.25, 0.3, 32);
-    let material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }); // white
+    let material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
     let circle = new THREE.Mesh(geometry, material);
     circle.position.set(x, y, 0.1);
     scene.add(circle);
@@ -167,17 +166,24 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+// ✅ Fully responsive camera for portrait & landscape
 function onResize() {
-  const aspect = window.innerWidth / window.innerHeight;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const aspect = width / height;
 
-  // Update camera aspect
   camera.aspect = aspect;
 
-  // Calculate distance so the grid always fits in view
-  const gridWidth = 3; // 3 units wide
-  const fov = camera.fov * (Math.PI / 180); // convert to radians
-  camera.position.z = (gridWidth / 2) / Math.tan(fov / 2) * 1.2; // 1.2 = padding
+  const gridSize = 3; // 3x3 grid
+  const fov = camera.fov * (Math.PI / 180);
+
+  // Calculate distances for width and height
+  const distWidth = (gridSize / 2) / Math.tan(fov / 2) * 1.1;
+  const distHeight = (gridSize / 2) / Math.tan(fov / 2 / aspect) * 1.1;
+
+  // Use max distance so grid fits both dimensions
+  camera.position.z = Math.max(distWidth, distHeight);
 
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(width, height);
 }
