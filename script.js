@@ -32,6 +32,7 @@ function init() {
   createGrid();
   createCells();
 
+  // pointer + touch events
   renderer.domElement.addEventListener("pointerdown", onPointerDown);
   renderer.domElement.addEventListener("touchstart", onPointerDown, { passive: false });
 
@@ -40,6 +41,7 @@ function init() {
   onResize();
 }
 
+// Grid using lines
 function createGrid() {
   const material = new THREE.LineBasicMaterial({ color: 0xffffff });
   const positions = [-0.5, 0.5];
@@ -76,17 +78,23 @@ function onPointerDown(event) {
   event.preventDefault();
 
   const rect = renderer.domElement.getBoundingClientRect();
-  const clientX = event.clientX || event.touches?.[0]?.clientX;
-  const clientY = event.clientY || event.touches?.[0]?.clientY;
+  let clientX = event.clientX;
+  let clientY = event.clientY;
 
+  if (event.touches && event.touches.length > 0) {
+    clientX = event.touches[0].clientX;
+    clientY = event.touches[0].clientY;
+  }
+
+  // normalize coordinates
   mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  let intersects = raycaster.intersectObjects(cells);
+  const intersects = raycaster.intersectObjects(cells);
 
   if (intersects.length > 0) {
-    let index = intersects[0].object.userData.index;
+    const index = intersects[0].object.userData.index;
     if (board[index] === "") {
       board[index] = currentPlayer;
       placeSymbol(index, currentPlayer);
@@ -101,7 +109,7 @@ function placeSymbol(index, player) {
   let y = 1 - Math.floor(index / 3);
 
   if (player === "X") {
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff }); // white
+    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
     let p1 = [new THREE.Vector3(x - 0.3, y - 0.3, 0), new THREE.Vector3(x + 0.3, y + 0.3, 0)];
     let p2 = [new THREE.Vector3(x - 0.3, y + 0.3, 0), new THREE.Vector3(x + 0.3, y - 0.3, 0)];
     let l1 = new THREE.Line(new THREE.BufferGeometry().setFromPoints(p1), material);
@@ -110,7 +118,7 @@ function placeSymbol(index, player) {
     symbols.push(l1, l2);
   } else {
     const geometry = new THREE.RingGeometry(0.25, 0.3, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }); // white
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
     const circle = new THREE.Mesh(geometry, material);
     circle.position.set(x, y, 0);
     symbolGroup.add(circle);
@@ -126,7 +134,7 @@ function checkWinner() {
   ];
 
   for (let combo of wins) {
-    let [a,b,c] = combo;
+    const [a,b,c] = combo;
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
       showModal("Player " + board[a] + " Wins!");
       gameOver = true;
