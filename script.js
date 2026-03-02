@@ -41,18 +41,21 @@ function init() {
   onResize();
 }
 
-// Grid lines
+// Fixed grid color/shading
 function createGrid() {
-  const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+  // single material for all lines, disable depth test to avoid shading differences
+  const material = new THREE.LineBasicMaterial({ color: 0xffffff, depthTest: false });
   const positions = [-0.5, 0.5];
 
+  // vertical lines
   positions.forEach(x => {
-    let points = [new THREE.Vector3(x, -1.5, 0), new THREE.Vector3(x, 1.5, 0)];
+    const points = [new THREE.Vector3(x, -1.5, 0), new THREE.Vector3(x, 1.5, 0)];
     gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
   });
 
+  // horizontal lines
   positions.forEach(y => {
-    let points = [new THREE.Vector3(-1.5, y, 0), new THREE.Vector3(1.5, y, 0)];
+    const points = [new THREE.Vector3(-1.5, y, 0), new THREE.Vector3(1.5, y, 0)];
     gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
   });
 }
@@ -68,7 +71,7 @@ function createCells() {
       cell.position.set(x, y, 0);
       cell.userData.index = index;
       cells.push(cell);
-      scene.add(cell); // <-- this ensures raycaster can hit the mesh
+      scene.add(cell); // ensure raycaster can hit
       board.push("");
       index++;
     }
