@@ -13,14 +13,10 @@ animate();
 function init() {
   scene = new THREE.Scene();
 
+  // Initial camera setup (distance corrected in onResize)
   const aspect = window.innerWidth / window.innerHeight;
-  camera = new THREE.PerspectiveCamera(
-    75,
-    aspect,
-    0.1,
-    1000
-  );
-  camera.position.z = aspect > 1 ? 5 : 6; // responsive distance
+  camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+  camera.position.z = 6;
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -33,6 +29,9 @@ function init() {
   renderer.domElement.addEventListener("touchstart", onPointerDown, { passive: false });
 
   window.addEventListener("resize", onResize);
+
+  // Run initial resize to fit current orientation
+  onResize();
 }
 
 function createGrid() {
@@ -169,8 +168,16 @@ function animate() {
 }
 
 function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.position.z = camera.aspect > 1 ? 5 : 6;
+  const aspect = window.innerWidth / window.innerHeight;
+
+  // Update camera aspect
+  camera.aspect = aspect;
+
+  // Calculate distance so the grid always fits in view
+  const gridWidth = 3; // 3 units wide
+  const fov = camera.fov * (Math.PI / 180); // convert to radians
+  camera.position.z = (gridWidth / 2) / Math.tan(fov / 2) * 1.2; // 1.2 = padding
+
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
