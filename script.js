@@ -19,7 +19,7 @@ function init() {
   camera.position.z = 5;
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio); 
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
@@ -41,7 +41,7 @@ function init() {
   onResize();
 }
 
-// Grid using lines
+// Grid lines
 function createGrid() {
   const material = new THREE.LineBasicMaterial({ color: 0xffffff });
   const positions = [-0.5, 0.5];
@@ -57,6 +57,7 @@ function createGrid() {
   });
 }
 
+// Create 9 invisible planes for tapping
 function createCells() {
   let index = 0;
   for (let y = 1; y >= -1; y--) {
@@ -67,6 +68,7 @@ function createCells() {
       cell.position.set(x, y, 0);
       cell.userData.index = index;
       cells.push(cell);
+      scene.add(cell); // <-- this ensures raycaster can hit the mesh
       board.push("");
       index++;
     }
@@ -75,7 +77,7 @@ function createCells() {
 
 function onPointerDown(event) {
   if (gameOver) return;
-  event.preventDefault(); // prevent scrolling on touch
+  event.preventDefault(); // prevent scrolling
 
   const rect = renderer.domElement.getBoundingClientRect();
   let clientX, clientY;
@@ -88,7 +90,6 @@ function onPointerDown(event) {
     clientY = event.clientY;
   }
 
-  // Convert to normalized device coordinates (-1 to +1)
   mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
