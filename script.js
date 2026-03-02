@@ -7,7 +7,6 @@ let gameOver = false;
 let cells = [];
 let symbols = [];
 let symbolGroup;
-let gridGroup;
 
 init();
 animate();
@@ -23,15 +22,11 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // Grid group contains only grid lines (not scaled)
-  gridGroup = new THREE.Group();
-  scene.add(gridGroup);
-
-  // Symbol group contains X/O (scales with screen)
+  // Symbol group contains X/O symbols (scales with screen)
   symbolGroup = new THREE.Group();
   scene.add(symbolGroup);
 
-  createGrid();
+  createGrid();   // grid lines added directly to scene
   createCells();
 
   renderer.domElement.addEventListener("pointerdown", onPointerDown);
@@ -48,12 +43,14 @@ function createGrid() {
 
   positions.forEach(x => {
     let points = [new THREE.Vector3(x, -1.5, 0), new THREE.Vector3(x, 1.5, 0)];
-    gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material);
+    scene.add(line);  // directly in scene fixes Safari/Chrome visibility
   });
 
   positions.forEach(y => {
     let points = [new THREE.Vector3(-1.5, y, 0), new THREE.Vector3(1.5, y, 0)];
-    gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material);
+    scene.add(line);  // directly in scene
   });
 }
 
@@ -181,7 +178,7 @@ function onResize() {
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
 
-  // Scale only symbols to fit screen
+  // scale only symbols
   const scaleFactor = Math.min(width / 3, height / 3) * 0.9;
   symbolGroup.scale.set(scaleFactor, scaleFactor, 1);
 }
