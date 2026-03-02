@@ -75,18 +75,20 @@ function createCells() {
 
 function onPointerDown(event) {
   if (gameOver) return;
-  event.preventDefault();
+  event.preventDefault(); // prevent scrolling on touch
 
   const rect = renderer.domElement.getBoundingClientRect();
-  let clientX = event.clientX;
-  let clientY = event.clientY;
+  let clientX, clientY;
 
-  if (event.touches && event.touches.length > 0) {
+  if (event.type === "touchstart") {
     clientX = event.touches[0].clientX;
     clientY = event.touches[0].clientY;
+  } else {
+    clientX = event.clientX;
+    clientY = event.clientY;
   }
 
-  // normalize coordinates
+  // Convert to normalized device coordinates (-1 to +1)
   mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
