@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Three.js Tic Tac Toe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="menu" onclick="toggleMenu()">⋮</div>
+
+  <div class="dropdown" id="dropdown">
+    <button onclick="resetGame()">Reset Game</button>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div id="modalText"></div>
+      <button onclick="closeModal()">Play Again</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
