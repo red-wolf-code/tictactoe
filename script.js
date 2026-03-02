@@ -6,6 +6,7 @@ let currentPlayer = "X";
 let gameOver = false;
 let cells = [];
 let symbols = [];
+let gridGroup;
 
 init();
 animate();
@@ -13,13 +14,15 @@ animate();
 function init() {
   scene = new THREE.Scene();
 
-  // Initial camera setup (distance corrected in onResize)
-  const aspect = window.innerWidth / window.innerHeight;
-  camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
+
+  // Create a group for the grid & cells
+  gridGroup = new THREE.Group();
+  scene.add(gridGroup);
 
   createGrid();
   createCells();
@@ -29,7 +32,6 @@ function init() {
 
   window.addEventListener("resize", onResize);
 
-  // Initial resize to fit current screen
   onResize();
 }
 
@@ -39,12 +41,12 @@ function createGrid() {
 
   positions.forEach(x => {
     let points = [new THREE.Vector3(x, -1.5, 0), new THREE.Vector3(x, 1.5, 0)];
-    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+    gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
   });
 
   positions.forEach(y => {
     let points = [new THREE.Vector3(-1.5, y, 0), new THREE.Vector3(1.5, y, 0)];
-    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+    gridGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
   });
 }
 
@@ -57,7 +59,7 @@ function createCells() {
       let cell = new THREE.Mesh(geometry, material);
       cell.position.set(x, y, 0);
       cell.userData.index = index;
-      scene.add(cell);
+      gridGroup.add(cell);
       cells.push(cell);
       board.push("");
       index++;
@@ -86,9 +88,7 @@ function onPointerDown(event) {
       board[index] = currentPlayer;
       placeSymbol(index, currentPlayer);
       checkWinner();
-      if (!gameOver) {
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-      }
+      if (!gameOver) currentPlayer = currentPlayer === "X" ? "O" : "X";
     }
   }
 }
@@ -166,24 +166,21 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-// ✅ Fully responsive camera for portrait & landscape
+// ✅ Final responsive scaling: fits portrait & landscape perfectly
 function onResize() {
   const width = window.innerWidth;
   const height = window.innerHeight;
   const aspect = width / height;
 
   camera.aspect = aspect;
-
-  const gridSize = 3; // 3x3 grid
-  const fov = camera.fov * (Math.PI / 180);
-
-  // Calculate distances for width and height
-  const distWidth = (gridSize / 2) / Math.tan(fov / 2) * 1.1;
-  const distHeight = (gridSize / 2) / Math.tan(fov / 2 / aspect) * 1.1;
-
-  // Use max distance so grid fits both dimensions
-  camera.position.z = Math.max(distWidth, distHeight);
-
   camera.updateProjectionMatrix();
+
   renderer.setSize(width, height);
+
+  // Scale grid group to fit viewport
+  const gridWidth = 3;
+  const gridHeight = 3;
+
+  const scaleFactor = Math.min(width / gridWidth, height / gridHeight) * 0.9; // 0.9 = padding
+  gridGroup.scale.set(scaleFactor, scaleFactor, 1);
 }
